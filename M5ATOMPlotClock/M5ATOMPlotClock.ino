@@ -26,7 +26,7 @@ const uint8_t PWM_level = 16; //PWM 16bit(0～65535)
 //       - see http://www.pjrc.com/teensy/td_libs_DS1307RTC.html for how to hook up the real time clock 
 // 1.03  Fixed the length bug at the servo2 angle calculation, other fixups
 
-// for M5AtomLite modified by @shikarunochi
+// for M5Atom modified by @shikarunochi
 
 
 // delete or mark the next line as comment if you don't need these
@@ -48,7 +48,7 @@ const uint8_t PWM_level = 16; //PWM 16bit(0～65535)
 //#define SERVORIGHTNULL 815
 #define SERVOLEFTNULL 1700
 //#define SERVORIGHTNULL 790
-#define SERVORIGHTNULL 800
+#define SERVORIGHTNULL 850
 
 #define SERVOPINLIFT  2
 #define SERVOPINLEFT  3
