@@ -1,4 +1,5 @@
 #include "M5Atom.h"
+#include "pictureData.h"
 
 //http://blog.robotakao.jp/blog-entry-387.html
 const uint8_t Srv1 = 23, Srv2 = 19, Srv3 = 22;//GPIO No. //1:lift 2:left 3:right
@@ -112,10 +113,30 @@ void setup()
   ledcAttachPin(Srv2, srv_CH2);
   ledcAttachPin(Srv3, srv_CH3);
   
-  setTime(9,25,0,0,0,0);
+  lift(2);
+  drawTo(71.0, 52);
+  lift(1);
 
-  drawTo(75.2, 55);
-  lift(0);
+  delay(5000);
+  sweep();
+  delay(500);
+
+  lift(2);
+  drawPicture(pictureData1,sizeof(pictureData1)/ sizeof(pictureData1[0]));
+  
+  lift(2);
+  drawTo(71.0, 52);
+  lift(1);
+
+  delay(5000);
+  sweep();
+  delay(500);
+  drawPicture(pictureData2, sizeof(pictureData2)/ sizeof(pictureData2[0]));
+  
+  lift(2);
+   
+  drawTo(71.0, 52);
+  lift(1);
   delay(1000);
 
 } 
@@ -134,128 +155,109 @@ void loop()
 #else 
 
 
-  int i = 0;
-  if (last_min != minute()) {
-
-    lift(0);
-
-    hour();
-    while ((i+1)*10 <= hour())
-    {
-      i++;
-    }
-
-    number(3, 3, 111, 1);
-    number(5, 25, i, 0.9);
-    number(19, 25, (hour()-i*10), 0.9);
-    number(28, 25, 11, 0.9);
-
-    i=0;
-    while ((i+1)*10 <= minute())
-    {
-      i++;
-    }
-    number(34, 25, i, 0.9);
-    number(48, 25, (minute()-i*10), 0.9);
-    lift(2);
-    //drawTo(71.0, 47.2);
-    drawTo(71.0, 52);
-    lift(1);
-    last_min = minute();
-    delay(580);
-
-  }
-
 #endif
 
 } 
 
-// Writing numeral with bx by being the bottom left originpoint. Scale 1 equals a 20 mm high font.
-// The structure follows this principle: move to first startpoint of the numeral, lift down, draw numeral, lift up
-void number(float bx, float by, int num, float scale) {
+void drawPicture(const int pictureData[],int dataSize){
+  int x0 = -1;
+  int y0 = -1;
+  int x1 = -1;
+  int y1 = -1;
 
-  switch (num) {
+  //-1が出たら次の線
+  //int dataSize = sizeof(pictureData)/ sizeof(*pictureData);
+  int index = 0;
+  while(index < dataSize){
+    if(x0 == -1){ //書き始め
+      if(pictureData[index]==-1){
+        break;
+      }
+      index++;  //カラー読み飛ばし
+      x0=pictureData[index++];
+      y0=pictureData[index++];
+      //ドット打つ
+      draw(x0, y0);
+      Serial.print("x0:");
+      Serial.print(x0);
+      Serial.print("Y0:");
+      Serial.print(y0);
+      Serial.print("\n");
+      
+      lift(0);
+    }
+    if(pictureData[index]==-1){
+      x0 = -1;
+      y0 = -1;
+      index++;
+      lift(1);
+      continue;
+    }
+    x1=pictureData[index++];
+    y1=pictureData[index++];
 
-  case 0:
-    drawTo(bx + 12 * scale, by + 6 * scale);
-    lift(0);
-    bogenGZS(bx + 7 * scale, by + 10 * scale, 10 * scale, -0.8, 6.7, 0.5);
-    lift(1);
-    break;
-  case 1:
+    //距離が短すぎるなら書かない
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    double c = sqrt(dx * dx + dy * dy); 
+    if(c >= 10){
+      draw(x1, y1);
+        Serial.print("x1:");
+        Serial.print(x1);
+        Serial.print("Y1:");
+        Serial.print(y1);
+      x0 = x1;
+      y0 = y1;
+    }
+  }
+}
 
-    drawTo(bx + 3 * scale, by + 15 * scale);
-    lift(0);
-    drawTo(bx + 10 * scale, by + 20 * scale);
-    drawTo(bx + 10 * scale, by + 0 * scale);
-    lift(1);
-    break;
-  case 2:
-    drawTo(bx + 2 * scale, by + 12 * scale);
-    lift(0);
-    bogenUZS(bx + 8 * scale, by + 14 * scale, 6 * scale, 3, -0.8, 1);
-    drawTo(bx + 1 * scale, by + 0 * scale);
-    drawTo(bx + 12 * scale, by + 0 * scale);
-    lift(1);
-    break;
-  case 3:
-    drawTo(bx + 2 * scale, by + 17 * scale);
-    lift(0);
-    bogenUZS(bx + 5 * scale, by + 15 * scale, 5 * scale, 3, -2, 1);
-    bogenUZS(bx + 5 * scale, by + 5 * scale, 5 * scale, 1.57, -3, 1);
-    lift(1);
-    break;
-  case 4:
-    drawTo(bx + 10 * scale, by + 0 * scale);
-    lift(0);
-    drawTo(bx + 10 * scale, by + 20 * scale);
-    drawTo(bx + 2 * scale, by + 6 * scale);
-    drawTo(bx + 12 * scale, by + 6 * scale);
-    lift(1);
-    break;
-  case 5:
-    drawTo(bx + 2 * scale, by + 5 * scale);
-    lift(0);
-    bogenGZS(bx + 5 * scale, by + 6 * scale, 6 * scale, -2.5, 2, 1);
-    drawTo(bx + 5 * scale, by + 20 * scale);
-    drawTo(bx + 12 * scale, by + 20 * scale);
-    lift(1);
-    break;
-  case 6:
-    drawTo(bx + 2 * scale, by + 10 * scale);
-    lift(0);
-    bogenUZS(bx + 7 * scale, by + 6 * scale, 6 * scale, 2, -4.4, 1);
-    drawTo(bx + 11 * scale, by + 20 * scale);
-    lift(1);
-    break;
-  case 7:
-    drawTo(bx + 2 * scale, by + 20 * scale);
-    lift(0);
-    drawTo(bx + 12 * scale, by + 20 * scale);
-    drawTo(bx + 2 * scale, by + 0);
-    lift(1);
-    break;
-  case 8:
-    drawTo(bx + 5 * scale, by + 10 * scale);
-    lift(0);
-    bogenUZS(bx + 5 * scale, by + 15 * scale, 5 * scale, 4.7, -1.6, 1);
-    bogenGZS(bx + 5 * scale, by + 5 * scale, 5 * scale, -4.7, 2, 1);
-    lift(1);
-    break;
+void draw(int x, int y){
+  float fx = (float)x * 67 / 640;
+  float fy =  (float)y * 50 / 480;
+      Serial.print(": f x:");
+      Serial.print(fx);
+      Serial.print("f y:");
+      Serial.print(fy);
+      Serial.print("\n");
 
-  case 9:
-    drawTo(bx + 9 * scale, by + 11 * scale);
-    lift(0);
-    bogenUZS(bx + 7 * scale, by + 15 * scale, 5 * scale, 4, -0.5, 1);
-    drawTo(bx + 5 * scale, by + 0);
-    lift(1);
-    break;
+  if(55 - fy <= 0){
+    fy = 55;
+  }
+  
+  drawTo( fx - 5, 55 - fy);
+  
+  delay(10);
+}
 
-  case 111:
+void drawTest(){
 
+  delay(1000);
+  drawTo(0,20);
+  lift(0);
+  delay(1000);
+  drawTo(60,20);
+  delay(1000);
+  drawTo(60,50);
+  delay(1000);
+  drawTo(0,50);
+  delay(1000);
+  drawTo(5,20);
+  delay(1000);
+  drawTo(60,50);
+  lift(1);
+  delay(1000);
+  drawTo(0,50);
+  lift(0);
+  delay(1000);
+  drawTo(60,20);
+  lift(1);
+}
+
+void sweep(){
     lift(0);
     //drawTo(70, 45);
-    drawTo(71.0, 50);
+    drawTo(65-WISHY, 52);
     drawTo(65-WISHY, 50);
     drawTo(65-WISHY, 43);
 
@@ -273,31 +275,27 @@ void number(float bx, float by, int num, float scale) {
     drawTo(5, 34);
     drawTo(5, 29);
     drawTo(6, 29);
-    drawTo(65-WISHY, 26);
+    drawTo(65-WISHY, 29);
+    drawTo(65-WISHY, 25);
+
+    drawTo(5, 25);
+    drawTo(5, 20);
+    drawTo(65-WISHY, 20);
+    drawTo(65-WISHY, 16);
+
+    drawTo(5, 16);
+    drawTo(5, 12);
+    drawTo(65-WISHY, 12);
+    drawTo(65-WISHY, 8);
+    drawTo(5, 8);
 
     drawTo(5, 26);
     drawTo(60-WISHY, 40);
     drawTo(60-WISHY, 45);
+    drawTo(65-WISHY, 50);
     drawTo(71.0, 50);
     //drawTo(73.2, 44.0);
     lift(2);
-
-    break;
-
-  case 11:
-    drawTo(bx + 5 * scale, by + 15 * scale);
-    lift(0);
-    bogenGZS(bx + 5 * scale, by + 15 * scale, 0.1 * scale, 1, -1, 1);
-    delay(10);
-    lift(1);
-    drawTo(bx + 5 * scale, by + 5 * scale);
-    lift(0);
-    bogenGZS(bx + 5 * scale, by + 5 * scale, 0.1 * scale, 1, -1, 1);
-    delay(10);
-    lift(1);
-    break;
-
-  }
 }
 
 void lift(char lift) {
