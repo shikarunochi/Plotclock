@@ -1,5 +1,25 @@
 #include "M5Atom.h"
 #include "fontData.h"
+
+// Plotclock
+// cc - by Johannes Heberlein 2014
+// v 1.02
+// thingiverse.com/joo   wiki.fablab-nuernberg.de
+// units: mm; microseconds; radians
+// origin: bottom left of drawing surface
+// time library see http://playground.arduino.cc/Code/time 
+// RTC  library see http://playground.arduino.cc/Code/time 
+//               or http://www.pjrc.com/teensy/td_libs_DS1307RTC.html  
+// Change log:
+// 1.01  Release by joo at https://github.com/9a/plotclock
+// 1.02  Additional features implemented by Dave (https://github.com/Dave1001/):
+//       - added ability to calibrate servofaktor seperately for left and right servos
+//       - added code to support DS1307, DS1337 and DS3231 real time clock chips
+//       - see http://www.pjrc.com/teensy/td_libs_DS1307RTC.html for how to hook up the real time clock 
+// 1.03  Fixed the length bug at the servo2 angle calculation, other fixups
+
+// PlotFont modified by @shikarunochi
+
 //http://blog.robotakao.jp/blog-entry-387.html
 const uint8_t Srv1 = 23, Srv2 = 19, Srv3 = 22;//GPIO No. //1:lift 2:left 3:right
 const uint8_t srv_CH1 = 1, srv_CH2 = 2, srv_CH3 = 3; //チャンネル
@@ -63,13 +83,6 @@ int servoLift = 1500;
 volatile double lastX = 75;
 volatile double lastY = 47.5;
 
-int last_min = 0;
-
-#define INIT 0
-#define MOVE_AND_LIFT_DOWN 1
-#define MOVE 2
-#define LIFT_UP 3
-#define SWEEP 4
 void setup()
 {
 
